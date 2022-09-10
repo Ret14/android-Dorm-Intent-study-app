@@ -40,8 +40,8 @@ class CrimeListFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                crimeListViewModel.crimes.collect { crimes ->
-                    binding.rvCrimeList.adapter = CrimeListAdapter(crimes)  //Adding adapter to RecyclerView
+                crimeListViewModel.crimes.collect {
+                    binding.rvCrimeList.adapter = CrimeListAdapter(it)
                 }
             }
         }
