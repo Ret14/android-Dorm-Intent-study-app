@@ -9,24 +9,25 @@ import com.example.dormintent.databinding.ListItemCrimeBinding
 import com.example.dormintent.databinding.ListItemSeriousCrimeBinding
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
 import com.google.android.material.snackbar.Snackbar
+import java.util.*
 
 open class BaseHolder(
     binding: androidx.viewbinding.ViewBinding
 ): RecyclerView.ViewHolder(binding.root) {
-    open fun bind(crime: Crime, onCrimeClicked: () -> Unit) {}
+    open fun bind(crime: Crime, onCrimeClicked: (id: UUID) -> Unit) {}
 }
 
 class CrimeHolder(
     private val binding: ListItemCrimeBinding
 ): BaseHolder(binding) {
-    override fun bind(crime: Crime, onCrimeClicked: () -> Unit) {
+    override fun bind(crime: Crime, onCrimeClicked: (id: UUID) -> Unit) {
         binding.tvCrimeTitle.text = crime.title
         val datePattern = "EEEE, MMM dd, yyyy"
         val currentDate = DateFormat.format(datePattern, crime.date)
         binding.tvCrimeDate.text = currentDate
         binding.ivSolvedPicture.isVisible = crime.isSolved
 
-        binding.root.setOnClickListener { onCrimeClicked() }
+        binding.root.setOnClickListener { onCrimeClicked(crime.id) }
     }
 }
 
@@ -43,7 +44,7 @@ class CrimeHolder(
 
 class CrimeListAdapter(
     private val crimes: List<Crime>,
-    private val onCrimeClicked: () -> Unit
+    private val onCrimeClicked: (id: UUID) -> Unit
     ): RecyclerView.Adapter<BaseHolder>() {
 
     override fun onBindViewHolder(holder: BaseHolder, position: Int) {
