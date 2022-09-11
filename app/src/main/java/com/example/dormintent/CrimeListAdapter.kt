@@ -13,28 +13,20 @@ import com.google.android.material.snackbar.Snackbar
 open class BaseHolder(
     binding: androidx.viewbinding.ViewBinding
 ): RecyclerView.ViewHolder(binding.root) {
-    open fun bind(crime: Crime) {}
+    open fun bind(crime: Crime, onCrimeClicked: () -> Unit) {}
 }
 
 class CrimeHolder(
     private val binding: ListItemCrimeBinding
 ): BaseHolder(binding) {
-    override fun bind(crime: Crime) {
+    override fun bind(crime: Crime, onCrimeClicked: () -> Unit) {
         binding.tvCrimeTitle.text = crime.title
         val datePattern = "EEEE, MMM dd, yyyy"
         val currentDate = DateFormat.format(datePattern, crime.date)
         binding.tvCrimeDate.text = currentDate
         binding.ivSolvedPicture.isVisible = crime.isSolved
 
-        binding.root.setOnClickListener { onClickListItem(crime) }
-    }
-
-    private fun onClickListItem(crime: Crime) {
-        Snackbar.make(
-            binding.root,
-            "This is ${crime.title}",
-            LENGTH_SHORT)
-            .show()
+        binding.root.setOnClickListener { onCrimeClicked() }
     }
 }
 
@@ -50,12 +42,13 @@ class CrimeHolder(
 //}
 
 class CrimeListAdapter(
-    private val crimes: List<Crime>
+    private val crimes: List<Crime>,
+    private val onCrimeClicked: () -> Unit
     ): RecyclerView.Adapter<BaseHolder>() {
 
     override fun onBindViewHolder(holder: BaseHolder, position: Int) {
         val crime = crimes[position]
-        holder.bind(crime)
+        holder.bind(crime, onCrimeClicked)
     }
 
     override fun getItemCount() = crimes.size
