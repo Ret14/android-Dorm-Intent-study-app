@@ -7,31 +7,28 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
 import com.example.dormintent.databinding.FragmentCrimeDetailBinding
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.*
 
 private const val TAG = "CrimeDetailFragment"
 
 class CrimeDetailFragment: Fragment() {
 
-    lateinit var crime: Crime
     private val args: CrimeDetailFragmentArgs by navArgs()
+    private val crimeDetailViewModel: CrimeDetailViewModel by viewModels {
+        CrimeDetailViewModelFactory(args.crimeId)
+    }
     private var _binding: FragmentCrimeDetailBinding? = null
     private val binding
     get() = checkNotNull(_binding) {
         "Cannot access binding because it is null. Is the view visible?"
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        crime = Crime(
-            id = UUID.randomUUID(),
-            title = "",
-            date = Date(),
-            isSolved = false,
-        )
-        Log.d(TAG, args.crimeId.toString())
     }
 
     override fun onCreateView(
@@ -45,17 +42,21 @@ class CrimeDetailFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                crimeDetailViewModel.crime.collect { crime ->
+                    crime?.let { updateUi(it) }
+                }
+            }
+        }
+    }
+
+    private fun updateUi(crime: Crime) {
         binding.apply {
-            etCrimeTitle.doOnTextChanged { text, _, _, _ ->
-                crime = crime.copy(title = text.toString())
-            }
-            btnCrimeDate.apply {
-                text = crime.date.toString()
-                isEnabled = false
-            }
-            cbCrimeSolved.setOnCheckedChangeListener { _, isChecked ->
-                crime = crime.copy(isSolved = isChecked)
-            }
+            if (etCrimeTitle.text.toString() != crime.title)
+                etCrimeTitle.setText(crime.title)
+            btnCrimeDate.text = crime.date.toString()
+            cbCrimeSolved.isChecked = crime.isSolved
         }
     }
 
